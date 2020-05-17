@@ -9,7 +9,7 @@ library(tsibble)
 #load training data:
 rie_training <- readRDS("./data/rie_training.rda")
 
-#when using a transformatin (e.g. box-cox) we first make a forecast using the
+#when using a transformatipn (e.g. box-cox) we first make a forecast using the
 #transformed data and then back transform the results
 
 #common transformations:
@@ -40,3 +40,36 @@ rie_forecasts %>% autoplot(rie_training)
 #this means that the forecasted value always represents the mean of the 
 #forecast distribution rather than the median (which can be the result of backward transformation)
 #the difference between the mean and median is referred to as the bias (hence bias adjustment)
+
+#forecast by decomposition is done in 2 steps:
+#forecast the seasonal and seasonally adjusted components separately
+#it is often the case that a naive seasonal forecast is used for the 
+#the seasonal component:
+
+decomposition <- rie_training %>% 
+                  model(stl_default = STL(arrivals ~ trend(window = 3))) %>%
+                  components() %>%
+                  select(-.model)
+
+decomposition %>%
+  model(NAIVE(season_adjust)) %>%
+  forecast() %>%
+  autoplot(decomposition) + ylab("New orders index") +
+  ggtitle("Naive forecasts of seasonally adjusted data")
+
+#we can then add the seasonal component back in using a snaive model
+#or we can this all in one step using fable:
+
+stl_decomposition <- rie_training %>%
+                      model(stlf = decomposition_model(STL(arrivals ~ trend(window = 3), robust = TRUE),
+                                                       NAIVE(season_adjust))
+                            )
+
+stl_decomposition %>% 
+  forecast() %>% 
+  autoplot(rie_training)
+
+#however this method normally result in significant autocorrelations in the 
+#forecast residuals because the naive seasonal forecast does not fully
+#capture the changing trend.
+stl_decomposition %>% gg_tsresiduals()
