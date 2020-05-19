@@ -66,7 +66,15 @@ lothian_registerdPatients <- listSizes %>% filter(HB == "S08000024") %>%
   summarise_at(vars(Both_Ages0to4:Male_AllAges), sum, na.rm = T) %>%
   ungroup()
 
+#also load list of public holidays
+#taken from the nager website
+public_holidays <- tibble(year = seq(2016, 2020, 1)) %>%
+  mutate(link = glue::glue("https://date.nager.at/PublicHoliday/Country/GB/{ year }/CSV"),
+         public_holidays = map(link, ~read_csv(.x))) %>%
+  unnest(public_holidays)
+
 #and save outputs:
 saveRDS(rie_training, "./data/rie_training.rda")
 saveRDS(rie_test, "./data/rie_test.rda")
 saveRDS(lothian_registerdPatients, "./data/lothian_population.rda")
+saveRDS(public_holidays, "./data/public_holidays.rda")
