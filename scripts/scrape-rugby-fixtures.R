@@ -75,3 +75,6 @@ scrape_scotland_rugby <- function(year, link = "https://www.espn.com/rugby/resul
 years <- (2010:2020)
 
 rugby_fixtures <- years %>% map_df(~scrape_scotland_rugby(year = .x))
+
+#save output:
+saveRDS(rugby_fixtures, here::here("data", "rugby-fixtures.rda"))

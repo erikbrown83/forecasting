@@ -68,7 +68,7 @@ lothian_registerdPatients <- listSizes %>% filter(HB == "S08000024") %>%
 
 #also load list of public holidays
 #taken from the nager website
-public_holidays <- tibble(year = seq(2016, 2020, 1)) %>%
+public_holidays <- tibble(year = seq(2016, 2021, 1)) %>%
   mutate(link = glue::glue("https://date.nager.at/PublicHoliday/Country/GB/{ year }/CSV"),
          public_holidays = map(link, ~read_csv(.x))) %>%
   unnest(public_holidays)
